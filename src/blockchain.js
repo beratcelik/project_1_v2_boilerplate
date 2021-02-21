@@ -70,13 +70,8 @@ class Blockchain {
             if(self.chain.length > 0){
                 block.previousBlockHash = self.chain[self.chain.length-1].hash;
             }
-           // let validationCheck = block.validateChain();
-
             self.chain.push(block);
             resolve(block);
-
-
-
         });
     }
 
@@ -122,7 +117,7 @@ class Blockchain {
             if(currentTime - time < 5*600000){
                 if(bitcoinMessage.verify(message, address, signature)){
                     let newBlock = new BlockClass.Block({"star": star,"owner": address});
-                    //await self._addBlock(newBlock);
+                    console.log(await this.validateChain());
                     await this._addBlock(newBlock);
                     resolve(newBlock);
                 }else{
@@ -197,51 +192,26 @@ class Blockchain {
      * 1. You should validate each block using `validate`
      * 2. Each Block should check the with the previousBlockHash
      */
-    /*
     validateChain() {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            await Promise.all(self.chain.map(async currentItem => {
-                if(currentItem.height === 0) {
-                    await currentItem.validate() ? true : errorLog.push("Genesis block does not validate");
-                } else {
-                    await currentItem.validate() ? true : errorLog.push(`Block ${currentItem.height} hash does not validate`);
-                    currentItem.previousBlockHash === self.chain[currentItem.height-1].hash ? true : errorLog.push(`Block ${currentItem.height} previous hash does not validate`);
-                }
-            }));
-            resolve(errorLog);
-        });
-    }
-    */
-    validateChain() {
-        let self = this;
-        let errorLog = ["1st un verified star","2nd unverified star"];
-        return new Promise(async (resolve, reject) => {
-          //  console.log(errorLog);
-           // console.log(self.chain);
-
              self.chain.forEach( b => {
-                //console.log("Block: "+b.height);
                 if( b.height < 1){
                     errorLog.push("Genesis Block does not need verification.");
                 }else{
                     if( b.previousBlockHash !== self.chain[b.height - 1].hash){
                         errorLog.push("Chain with height "+b.height + " is not valid.");
+                    }else{
+                        errorLog.push(`Block:${b.height} is verified`);
                     }
                 }
             });
-
-
-
             if(errorLog){
-                console.log(errorLog);
                 resolve(errorLog);
             }else{
-                console.log("All blocks are valid")
-                resolve("All the blocks are valid.");
+                resolve(false);
             }
-
         });
 
     }

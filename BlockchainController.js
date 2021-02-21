@@ -96,22 +96,16 @@ class BlockchainController {
             
         });
     }
-    // This endpoint allows you to check if there is invalid blocks
+    // This endpoint allows you to check if there is invalid block
     getInvalidBlocks(){
-        //let errorList = [];
         this.app.get("/getinvalidblocks", async (req, res)=>{
-            //return res.status(200).send("it works");
             try{
-                let errorList = this.blockchain.validateChain();
-               console.log("this is the error log: "+errorList[0]);
-              return res.status(200).json(errorList);
+                let errorList = await this.blockchain.validateChain();
+                return res.status(200).send(errorList);
             }catch (error){
-              return res.status(404).send("Validation check hasn't been performed.");
+                return res.status(404).send("Validation check hasn't been performed.");
             }
-
         });
-
-
     }
 
 
