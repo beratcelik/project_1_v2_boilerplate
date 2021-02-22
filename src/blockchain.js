@@ -65,13 +65,26 @@ class Blockchain {
         let self = this;
         return new Promise(async (resolve, reject) => {
             block.time = new Date().getTime().toString().slice(0,-3);
-            block.hash = SHA256(JSON.stringify(block)).toString();
             block.height = self.chain.length;
             if(self.chain.length > 0){
                 block.previousBlockHash = self.chain[self.chain.length-1].hash;
             }
-            self.chain.push(block);
-            resolve(block);
+            block.hash = SHA256(JSON.stringify(block)).toString();
+            if(await this.validateChain()){
+                let checkBlockCreated = self.chain.push(block);
+                if(checkBlockCreated){
+                    resolve(block);
+                }else{
+                    reject("Block hasn't been added to the chain");
+                }
+
+            }else{
+                reject("Block is not verified and not added to the chain");
+            }
+
+
+
+
         });
     }
 
@@ -85,10 +98,7 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-           // <WALLET_ADDRESS>:${new Date().getTime().toString().slice(0,-3)}:starRegistry
            resolve(`${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`);
-            //resolve("hello")
-           // resolve(`${address}:${this.getUTCTimeStamp()}:starRegistry`);
         });
     }
 
@@ -117,7 +127,6 @@ class Blockchain {
             if(currentTime - time < 5*600000){
                 if(bitcoinMessage.verify(message, address, signature)){
                     let newBlock = new BlockClass.Block({"star": star,"owner": address});
-                    console.log(await this.validateChain());
                     await this._addBlock(newBlock);
                     resolve(newBlock);
                 }else{
@@ -198,12 +207,12 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
              self.chain.forEach( b => {
                 if( b.height < 1){
-                    errorLog.push("Genesis Block does not need verification.");
+                    //errorLog.push("Genesis Block does not need verification.");
                 }else{
                     if( b.previousBlockHash !== self.chain[b.height - 1].hash){
-                        errorLog.push("Chain with height "+b.height + " is not valid.");
+                        errorLog.push(false);
                     }else{
-                        errorLog.push(`Block:${b.height} is verified`);
+                        errorLog.push(true);
                     }
                 }
             });
